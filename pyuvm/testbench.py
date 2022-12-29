@@ -6,11 +6,17 @@ import random
 import cocotb
 import pyuvm
 from utils import MuxBfm
-
+from cocotb_coverage.coverage import CoverPoint,coverage_db
 
 g_width = int(cocotb.top.g_width)
 covered_values = []
 
+
+# at_least = value is superfluous, just shows how you can determine the amount of times that
+# a bin must be hit to considered covered
+@CoverPoint("top.o_data",xf = lambda x : x, bins = list(range(2**g_width)), at_least=1)
+def number_cover(x):
+    pass
 
 class crv_inputs(crv.Randomized):
     def __init__(self,pulse,data):
@@ -91,6 +97,7 @@ class Coverage(uvm_subscriber):
 
     def write(self, data):
         (pulse, i_data) = data
+        number_cover(int(i_data))
         if((int(i_data)) not in self.cvg):
             self.cvg.add(int(i_data))
 
@@ -191,7 +198,13 @@ class Test(uvm_test):
 
     async def run_phase(self):
         self.raise_objection()
-        cocotb.start_soon(Clock(cocotb.top.i_clk_A, 5, units="ns").start())
-        cocotb.start_soon(Clock(cocotb.top.i_clk_B, 20, units="ns").start())
+
+        #clocks with variable phase difference
+        cocotb.start_soon(Clock(cocotb.top.i_clk_A, 3, units="ns").start())
+        cocotb.start_soon(Clock(cocotb.top.i_clk_B, 11, units="ns").start())
         await self.test_all.start()
+
+
+        coverage_db.report_coverage(cocotb.log.info,bins=True)
+        coverage_db.export_to_xml(filename="coverage_pyuvm.xml") 
         self.drop_objection()

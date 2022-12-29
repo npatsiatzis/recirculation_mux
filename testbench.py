@@ -17,7 +17,7 @@ def notify_full():
 
 # at_least = value is superfluous, just shows how you can determine the amount of times that
 # a bin must be hit to considered covered
-@CoverPoint("top.o_data",xf = lambda x : x.o_data_B.value, bins = list(range(g_width)), at_least=1)
+@CoverPoint("top.o_data",xf = lambda x : x.o_data_B.value, bins = list(range(2**g_width)), at_least=1)
 def number_cover(dut):
 	covered_value.append(dut.o_data_B.value)
 
@@ -44,8 +44,8 @@ async def reset(dut,cycles=1):
 async def test(dut):
 	"""Check results and coverage for recirculation MUX CDC"""
 
-	cocotb.start_soon(Clock(dut.i_clk_A, 5, units="ns").start())
-	cocotb.start_soon(Clock(dut.i_clk_B, 20, units="ns").start())
+	cocotb.start_soon(Clock(dut.i_clk_A, 3, units="ns").start())
+	cocotb.start_soon(Clock(dut.i_clk_B, 11, units="ns").start())
 	await reset(dut,5)	
 	
 	rx_data = 0
@@ -62,11 +62,15 @@ async def test(dut):
 			number_cover(dut)
 			coverage_db["top.o_data"].add_threshold_callback(notify_full, 100)	
 			
-			data = random.randint(0,2*g_width-1)
+			data = random.randint(0,2**g_width-1)
 			if(full_coverage == True):
 				break
 			else:
 				while(data in covered_value):					
-					data = random.randint(0,2*g_width-1)
+					data = random.randint(0,2**g_width-1)
 			await send_pulse(dut)
+
+
+	coverage_db.report_coverage(cocotb.log.info,bins=True)
+	coverage_db.export_to_xml(filename="coverage.xml") 
 		
