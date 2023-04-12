@@ -1,4 +1,4 @@
-from cocotb.triggers import Timer,RisingEdge,ClockCycles
+from cocotb.triggers import Timer,RisingEdge,FallingEdge,ClockCycles
 from cocotb.queue import QueueEmpty, Queue
 import cocotb
 import enum
@@ -44,8 +44,6 @@ class MuxBfm(metaclass=utility_classes.Singleton):
         await RisingEdge(self.dut.i_clk_B)
 
     async def driver_bfm(self):
-        self.dut.i_pulse_A.value = 0 
-        self.dut.i_data_A.value = 0
         while True:
             await RisingEdge(self.dut.i_clk_A)
             try:
@@ -57,13 +55,13 @@ class MuxBfm(metaclass=utility_classes.Singleton):
 
     async def data_mon_bfm(self):
         while True:
-            await RisingEdge(self.dut.i_clk_A)
-            data_tuple = (self.dut.i_pulse_A.value,self.dut.i_data_A.value)
-            self.data_mon_queue.put_nowait(data_tuple)
+            await RisingEdge(self.dut.w_pulse_B)
+            data = self.dut.i_data_A.value
+            self.data_mon_queue.put_nowait(data)
 
     async def result_mon_bfm(self):
         while True:
-            await RisingEdge(self.dut.i_clk_B)
+            await FallingEdge(self.dut.w_pulse_B)
             self.result_mon_queue.put_nowait(self.dut.o_data_B.value)
 
 

@@ -1,15 +1,17 @@
 --Synchronize a data bus across clock boundaries.
 
---1) toggle synchronizer to transfer a control pulse from domain A to B
+--Steps
+--1) use toggle synchronizer to transfer a control pulse from domain A to B
 --2) use synchronized control pulse as mux select that leads to a register
 --either sampling the data to be transfered, or recirculate its previous value. 
+
 library ieee;
 use ieee.std_logic_1164.all;
 
 entity recirculation_mux is
 	generic(
 		g_stages : natural :=2;
-		g_width : natural :=8);
+		g_width : natural :=4);
 	port(
 		--domain A data bus
 		i_clk_A : in std_ulogic;

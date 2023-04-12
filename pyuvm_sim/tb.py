@@ -1,4 +1,4 @@
-from cocotb.triggers import Timer,FallingEdge
+from cocotb.triggers import Timer,FallingEdge,Combine,Join
 from cocotb_coverage import crv
 from cocotb.clock import Clock
 from pyuvm import *
@@ -19,18 +19,17 @@ def number_cover(x):
     pass
 
 class crv_inputs(crv.Randomized):
-    def __init__(self,pulse,data):
+    def __init__(self,data):
         crv.Randomized.__init__(self)
-        self.pulse = pulse
         self.data = data
         self.add_rand("data",list(range(2**g_width)))
 
 # Sequence classes
 class SeqItem(uvm_sequence_item):
 
-    def __init__(self, name, pulse,data):
+    def __init__(self, name, data):
         super().__init__(name)
-        self.i_crv = crv_inputs(pulse,data)
+        self.i_crv = crv_inputs(data)
 
     def randomize_operands(self):
         self.i_crv.randomize()
@@ -38,24 +37,14 @@ class SeqItem(uvm_sequence_item):
 
 class RandomSeq(uvm_sequence):
     async def body(self):
-        while (len(covered_values) != 2**g_width):
-            #send the first half of the pulse
-            data_tr = SeqItem("data_tr", 1, 0)
+        while len(covered_values) != 2**g_width:
+            data_tr = SeqItem("data_tr", None)
             await self.start_item(data_tr)
             data_tr.randomize_operands()
             while(data_tr.i_crv.data in covered_values):
                 data_tr.randomize_operands()
             covered_values.append(data_tr.i_crv.data)
             await self.finish_item(data_tr)
-
-            #send the second hand of the pulse 
-            data_tr = SeqItem("data_tr", 0, data_tr.i_crv.data)
-            await self.start_item(data_tr)
-            await self.finish_item(data_tr)
-
-            #wait for sink to receive the control pulse to proceed with reading
-            #then you are free to change the value
-            await FallingEdge(cocotb.top.w_pulse_B)
 
 
 class TestAllSeq(uvm_sequence):
@@ -75,15 +64,17 @@ class Driver(uvm_driver):
         self.bfm = MuxBfm()
 
     async def launch_tb(self):
-        await self.bfm.resetA()
-        await self.bfm.resetB()
+        # await self.bfm.resetA()
+        # await self.bfm.resetB()
+        await Combine(Join(cocotb.start_soon(self.bfm.resetA())),Join(cocotb.start_soon(self.bfm.resetB())))
         self.bfm.start_bfm()
 
     async def run_phase(self):
         await self.launch_tb()
         while True:
             data = await self.seq_item_port.get_next_item()
-            await self.bfm.send_data((data.i_crv.pulse,data.i_crv.data))
+            await self.bfm.send_data((1,data.i_crv.data))
+            await self.bfm.send_data((0,data.i_crv.data))
             result = await self.bfm.get_result()
             self.ap.write(result)
             data.result = result
@@ -96,10 +87,9 @@ class Coverage(uvm_subscriber):
         self.cvg = set()
 
     def write(self, data):
-        (pulse, i_data) = data
-        number_cover(int(i_data))
-        if((int(i_data)) not in self.cvg):
-            self.cvg.add(int(i_data))
+        number_cover(int(data))
+        if((int(data)) not in self.cvg):
+            self.cvg.add(int(data))
 
     def report_phase(self):
         try:
@@ -141,14 +131,16 @@ class Scoreboard(uvm_component):
         while self.result_get_port.can_get():
             _, actual_result = self.result_get_port.try_get()
             data_success, data = self.data_get_port.try_get()
-
-            (pulse,i_data) = data 
-
-            old_w_pulse_B = w_pulse_B
-            w_pulse_B = cocotb.top.w_pulse_B.value
-            if(w_pulse_B == 0 and old_w_pulse_B == 1):
-                assert not (int(i_data) != int(actual_result)),"Wrong Behavior!"
- 
+            if not data_success:
+                self.logger.critical(f"result {actual_result} had no command")
+            else:
+                if int(data) == int(actual_result):
+                    self.logger.info("PASSED")
+                    print("i_tx_data is {}, rx_data is {}".format(int(data),int(actual_result)))
+                else:
+                    self.logger.error("FAILED")
+                    print("i_tx_data is {}, rx_data is {}".format(int(data),int(actual_result)))
+                    passed = False
         assert passed
 
 

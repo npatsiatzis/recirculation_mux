@@ -44,32 +44,25 @@ async def reset(dut,cycles=1):
 async def test(dut):
 	"""Check results and coverage for recirculation MUX CDC"""
 
+	#clocks with variable phase difference
 	cocotb.start_soon(Clock(dut.i_clk_A, 3, units="ns").start())
 	cocotb.start_soon(Clock(dut.i_clk_B, 11, units="ns").start())
 	await reset(dut,5)	
 	
 	rx_data = 0
-	data = random.randint(0,2**g_width-1)
-	await send_pulse(dut)
 	while (full_coverage != True):
+		await send_pulse(dut)
+		data = random.randint(0,2**g_width-1)
 		dut.i_data_A.value = data
 		expected_value = data
 		old_rx_data = rx_data
 		rx_data = dut.o_data_B.value
 		await RisingEdge(dut.i_clk_A)
-		if(old_rx_data != rx_data):
-			assert not (expected_value != int(dut.o_data_B.value)),"Different expected to actual read data"
-			number_cover(dut)
-			coverage_db["top.o_data"].add_threshold_callback(notify_full, 100)	
-			
-			data = random.randint(0,2**g_width-1)
-			if(full_coverage == True):
-				break
-			else:
-				while(data in covered_value):					
-					data = random.randint(0,2**g_width-1)
-			await send_pulse(dut)
 
+		await FallingEdge(dut.w_pulse_B)
+		assert not (expected_value != int(dut.o_data_B.value)),"Different expected to actual read data"
+		number_cover(dut)
+		coverage_db["top.o_data"].add_threshold_callback(notify_full, 100)	
 
 	coverage_db.report_coverage(cocotb.log.info,bins=True)
 	coverage_db.export_to_xml(filename="coverage.xml") 

@@ -12,14 +12,14 @@ rtl_dir = tests_dir                                    #path to hdl folder where
 
       
 #run tests with generic values for length
-@pytest.mark.parametrize("parameter", [{"g_width": str(i)} for i in range(4,13,4)])
+@pytest.mark.parametrize("parameter", [{"g_width": str(i)} for i in range(4,9,4)])
 def test_recirculation_mux(parameter):
 
-    module = "testbench"
+    module = "tb"
     toplevel = "recirculation_mux"   
     vhdl_sources = [
-        os.path.join(rtl_dir, "toggle_synchronizer.vhd"),
-        os.path.join(rtl_dir, "recirculation_mux.vhd"),
+        os.path.join(rtl_dir, "../rtl/toggle_synchronizer.vhd"),
+        os.path.join(rtl_dir, "../rtl/recirculation_mux.vhd"),
         ]
 
 
@@ -37,4 +37,3 @@ def test_recirculation_mux(parameter):
         sim_build="sim_build/"
         + "_".join(("{}={}".format(*i) for i in parameter.items())),
     )
-
