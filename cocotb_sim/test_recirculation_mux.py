@@ -18,8 +18,8 @@ def test_recirculation_mux(parameter):
     module = "testbench"
     toplevel = "recirculation_mux"   
     vhdl_sources = [
-        os.path.join(rtl_dir, "../rtl/toggle_synchronizer.vhd"),
-        os.path.join(rtl_dir, "../rtl/recirculation_mux.vhd"),
+        os.path.join(rtl_dir, "../rtl/VHDL/toggle_synchronizer.vhd"),
+        os.path.join(rtl_dir, "../rtl/VHDL/recirculation_mux.vhd"),
         ]
 
 
@@ -47,7 +47,7 @@ def test_toggle_synchronize(parameter):
     module = "testbench_toggle"
     toplevel = "toggle_synchronizer"   
     vhdl_sources = [
-        os.path.join(rtl_dir, "../rtl/toggle_synchronizer.vhd"),
+        os.path.join(rtl_dir, "../rtl/VHDL/toggle_synchronizer.vhd"),
         ]
 
 

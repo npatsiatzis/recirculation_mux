@@ -18,8 +18,8 @@ def test_recirculation_mux(parameter):
     module = "tb"
     toplevel = "recirculation_mux"   
     vhdl_sources = [
-        os.path.join(rtl_dir, "../rtl/toggle_synchronizer.vhd"),
-        os.path.join(rtl_dir, "../rtl/recirculation_mux.vhd"),
+        os.path.join(rtl_dir, "../rtl/VHDL/toggle_synchronizer.vhd"),
+        os.path.join(rtl_dir, "../rtl/VHDL/recirculation_mux.vhd"),
         ]
 
 
