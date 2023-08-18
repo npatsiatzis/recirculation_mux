@@ -11,6 +11,7 @@
 
 -- RTL code in:
 - [VHDL](https://github.com/npatsiatzis/recirculation_mux/tree/main/rtl/VHDL)
+- [SystemVerilog](https://github.com/npatsiatzis/recirculation_mux/tree/main/rtl/SystemVerilog)
 
 -- Functional verification with methodologies:
 - [cocotb](https://github.com/npatsiatzis/recirculation_mux/tree/main/cocotb_sim)
