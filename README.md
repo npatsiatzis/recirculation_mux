@@ -16,4 +16,5 @@
 -- Functional verification with methodologies:
 - [cocotb](https://github.com/npatsiatzis/recirculation_mux/tree/main/cocotb_sim)
 - [pyuvm](https://github.com/npatsiatzis/recirculation_mux/tree/main/pyuvm_sim)
+- [uvm](https://github.com/npatsiatzis/recirculation_mux/tree/main/uvm_sim)
 
