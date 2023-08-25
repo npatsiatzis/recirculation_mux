@@ -4,7 +4,7 @@ module recirculation_mux
     #
     (
         parameter int G_STAGES = 2,
-        parameter int G_WIDTH = 4
+        parameter int G_WIDTH /*verilator public*/ = 4
     )
 
     (
@@ -15,7 +15,10 @@ module recirculation_mux
 
         input logic i_clk_B,
         input logic i_rst_B,
-        output logic [G_WIDTH - 1 : 0] o_data_B
+        output logic [G_WIDTH - 1 : 0] o_data_B,
+
+        output logic f_pulse_B,
+        output logic f_pulse_B_prev
     );
 
     logic w_pulse_B;
@@ -28,6 +31,15 @@ module recirculation_mux
         end else begin
             if (w_pulse_B)
                 o_data_B <= i_data_A;
+        end
+    end
+
+    assign f_pulse_B = w_pulse_B;
+    always_ff @(posedge i_clk_B) begin : pulse_B_past
+        if(i_rst_B) begin
+            f_pulse_B_prev <= 0;
+        end else begin
+            f_pulse_B_prev <= f_pulse_B;
         end
     end
 
