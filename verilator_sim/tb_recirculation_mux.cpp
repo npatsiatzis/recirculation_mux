@@ -18,8 +18,8 @@
 #define CLK_A_PERIOD 30
 #define CLK_A_PHASE 0
 
-#define CLK_B_PERIOD 31
-#define CLK_B_PHASE 3
+#define CLK_B_PERIOD 50
+#define CLK_B_PHASE 0
 
 
 
@@ -276,7 +276,6 @@ void simulation_tick_posedge(VerilatedVcdC *m_trace,char clk_source,std::shared_
     } else {
         dut->i_clk_B = 1;
     }
-    simulation_eval(dut, m_trace, ns);
 }
 
 void simulation_tick_negedge(VerilatedVcdC *m_trace,char clk_source,std::shared_ptr<Vrecirculation_mux> dut, vluint64_t &ns)
@@ -286,7 +285,6 @@ void simulation_tick_negedge(VerilatedVcdC *m_trace,char clk_source,std::shared_
     } else {
         dut->i_clk_B = 0;
     }
-    simulation_eval(dut, m_trace, ns);
 }
 
 
@@ -316,12 +314,7 @@ int main(int argc, char** argv, char** env) {
     while (outCoverage->is_full_coverage() == false) {
     // while(sim_time < MAX_SIM_TIME*20) {
 
-        // dut_reset(dut, sim_time);
-        // dut->i_clk_A ^= 1;
-        // dut->eval();
 
-        // Do all the driving/monitoring on a positive edge
-        // if (dut->i_clk_A == 1){
 
         if (POSEDGE(sim_time, CLK_A_PERIOD, CLK_A_PHASE)) {
                 simulation_tick_posedge(m_trace, 'A',dut,sim_time);
@@ -336,6 +329,7 @@ int main(int argc, char** argv, char** env) {
         if (NEGEDGE(sim_time, CLK_B_PERIOD, CLK_B_PHASE)) {
                 simulation_tick_negedge(m_trace, 'B',dut,sim_time);
         }
+        simulation_eval(dut, m_trace, sim_time);
 
 
         if (sim_time >= VERIF_START_TIME) {
