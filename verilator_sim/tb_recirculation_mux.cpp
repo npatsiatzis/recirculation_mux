@@ -314,6 +314,8 @@ int main(int argc, char** argv, char** env) {
     while (outCoverage->is_full_coverage() == false) {
     // while(sim_time < MAX_SIM_TIME*20) {
 
+        dut_reset(dut,sim_time);
+
 
 
         if (POSEDGE(sim_time, CLK_A_PERIOD, CLK_A_PHASE)) {
