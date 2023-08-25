@@ -15,11 +15,11 @@
 #define NEGEDGE(ns, period, phase) \
     ((ns) % (period) == ((phase) + (period)) / 2 % (period))
 
-#define CLK_A_PERIOD 3
+#define CLK_A_PERIOD 30
 #define CLK_A_PHASE 0
 
-#define CLK_B_PERIOD 11
-#define CLK_B_PHASE 0
+#define CLK_B_PERIOD 31
+#define CLK_B_PHASE 3
 
 
 
@@ -103,6 +103,10 @@ class Scb {
                 std::cout << "Test Failure!" << std::endl;
                 std::cout << "Expected : " <<  in->i_data_A << std::endl;
                 std::cout << "Got : " << tx->o_data_B << std::endl;
+            } else {
+                std::cout << "Test PASS!" << std::endl;
+                std::cout << "Expected : " <<  in->i_data_A << std::endl;
+                std::cout << "Got : " << tx->o_data_B << std::endl;   
             }
 
             // As the transaction items were allocated on the heap, it's important
@@ -117,29 +121,46 @@ class InDrv {
     private:
         // Vrecirculation_mux *dut;
         std::shared_ptr<Vrecirculation_mux> dut;
-        int i_pulse_A;
+        int state;
     public:
         InDrv(std::shared_ptr<Vrecirculation_mux> dut){
             this->dut = dut;
-            i_pulse_A = 0;
+            state = 0;
         }
 
-        void drive(InTx *tx){
-            // we always start with in_valid set to 0, and set it to
-            // 1 later only if necessary
-            // dut->i_valid = 0;
+        void drive(InTx *tx, int & new_tx_ready,int is_a_pos,int is_b_pos){
 
             // Don't drive anything if a transaction item doesn't exist
-            if(tx != NULL){
-                i_pulse_A++;
-                dut->i_pulse_A = i_pulse_A;
-                dut->i_data_A = tx->i_data_A;
-                i_pulse_A = i_pulse_A % 1;
 
-                // Release the memory by deleting the tx item
-                // after it has been consumed
-                delete tx;
+            switch(state) {
+                case 0:
+                    if(tx != NULL && is_a_pos == 1){
+                        dut->i_pulse_A = 1;
+                        dut->i_data_A = tx->i_data_A;
+
+                        new_tx_ready = 0;
+                        state = 1;
+                        delete tx;
+                     }
+
+                    break;
+                case 1:
+                    if(is_a_pos == 1){
+                        dut->i_pulse_A = 0;
+                        new_tx_ready = 0;
+                        state = 2;
+                    }
+                    break;
+                case 2:
+                    if (dut->f_pulse_B == 0 && dut->f_pulse_B_prev ==1 && is_b_pos == 1){
+                        state = 0;
+                        new_tx_ready = 1;
+                    }
+                    break;
+                default:
+                    state = 0;
             }
+
         }
 };
 
@@ -159,9 +180,9 @@ class InMon {
             this->cvg = cvg;
         }
 
-        void monitor(){
+        void monitor(int is_b_pos){
             // if(dut->i_valid == 1){
-            if(dut->f_pulse_B == 1 && dut->f_pulse_B_prev ==0) {
+            if(is_b_pos ==1 && dut->f_pulse_B == 1 && dut->f_pulse_B_prev ==0) {
                 InTx *tx = new InTx();
                 tx->i_data_A = dut->i_data_A;
                 // then pass the transaction item to the scoreboard
@@ -187,9 +208,8 @@ class OutMon {
             this->cvg = cvg;
         }
 
-        void monitor(){
-            if(dut->f_pulse_B == 0 && dut->f_pulse_B_prev ==1) {
-            // if(dut->o_valid == 1){
+        void monitor(int is_b_pos){
+            if(is_b_pos == 1 && dut->f_pulse_B == 0 && dut->f_pulse_B_prev ==1) {
                 OutTx *tx = new OutTx();
                 tx->o_data_B = dut->o_data_B;
 
@@ -216,10 +236,10 @@ class Sequence{
             this->cvg = cvg;
         }
 
-        InTx* genTx(){
+        InTx* genTx(int & new_tx_ready){
             in = new InTx();
             // std::shared_ptr<InTx> in(new InTx());
-            if(rand()%5 == 0){
+            if(rand()%5 == 0 && new_tx_ready == 1){
                 in->i_data_A = rand() % (1 << Vrecirculation_mux_recirculation_mux::G_WIDTH);   
 
                 while(cvg->is_covered(in->i_data_A) == false){
@@ -282,6 +302,7 @@ int main(int argc, char** argv, char** env) {
     m_trace->open("waveform.vcd");
 
     InTx   *tx;
+    int new_tx_ready = 1;
 
     // Here we create the driver, scoreboard, input and output monitor and coverage blocks
     std::unique_ptr<InDrv> drv(new InDrv(dut));
@@ -293,6 +314,8 @@ int main(int argc, char** argv, char** env) {
     std::unique_ptr<Sequence> sequence(new Sequence(inCoverage));
 
     while (outCoverage->is_full_coverage() == false) {
+    // while(sim_time < MAX_SIM_TIME*20) {
+
         // dut_reset(dut, sim_time);
         // dut->i_clk_A ^= 1;
         // dut->eval();
@@ -300,47 +323,38 @@ int main(int argc, char** argv, char** env) {
         // Do all the driving/monitoring on a positive edge
         // if (dut->i_clk_A == 1){
 
-        if (POSEDGE(sim_time, CLK_A_PERIOD, CLK_A_PHASE))
+        if (POSEDGE(sim_time, CLK_A_PERIOD, CLK_A_PHASE)) {
                 simulation_tick_posedge(m_trace, 'A',dut,sim_time);
-        if (NEGEDGE(sim_time, CLK_A_PERIOD, CLK_A_PHASE))
+        }
+        if (NEGEDGE(sim_time, CLK_A_PERIOD, CLK_A_PHASE)) {
                 simulation_tick_negedge(m_trace, 'A',dut,sim_time);
-
-        if (POSEDGE(sim_time, CLK_B_PERIOD, CLK_B_PHASE))
+        }
+        
+        if (POSEDGE(sim_time, CLK_B_PERIOD, CLK_B_PHASE)){
                 simulation_tick_posedge(m_trace, 'B',dut,sim_time);
-        if (NEGEDGE(sim_time, CLK_B_PERIOD, CLK_B_PHASE))
+        }
+        if (NEGEDGE(sim_time, CLK_B_PERIOD, CLK_B_PHASE)) {
                 simulation_tick_negedge(m_trace, 'B',dut,sim_time);
-
+        }
 
 
         if (sim_time >= VERIF_START_TIME) {
             // Generate a randomised transaction item 
-            // tx = rndInTx(inCoverage);
-            tx = sequence->genTx();
-
+            tx = sequence->genTx(new_tx_ready);
             // Pass the generated transaction item in the driver
             //to convert it to pin wiggles
             //operation similar to than of a connection between
             //a sequencer and a driver in a UVM tb
-            if (dut->i_clk_A == 1){
-                drv->drive(tx);
-            }
-
+            drv->drive(tx,new_tx_ready,POSEDGE(sim_time, CLK_A_PERIOD, CLK_A_PHASE),POSEDGE(sim_time, CLK_B_PERIOD, CLK_B_PHASE));
             // Monitor the input interface
             // also writes recovered transaction to
             // input coverage and scoreboard
-            if(dut->i_clk_B ==1) {
-               inMon->monitor();
-
+            inMon->monitor(POSEDGE(sim_time, CLK_B_PERIOD, CLK_B_PHASE));
             // Monitor the output interface
             // also writes recovered result (out transaction) to
             // output coverage and scoreboard 
-                outMon->monitor();
-            }
+            outMon->monitor(POSEDGE(sim_time, CLK_B_PERIOD, CLK_B_PHASE));
         }
-        // }
-        // end of positive edge processing
-
-        // m_trace->dump(sim_time);
         sim_time++;
     }
 
