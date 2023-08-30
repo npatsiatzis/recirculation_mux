@@ -3,8 +3,11 @@
 #include <iostream>
 #include <cstdlib>
 #include <memory>
+#include <set>
 #include <verilated.h>
+#include <deque>
 #include <verilated_vcd_c.h>
+#include <verilated_cov.h>
 #include "Vrecirculation_mux.h"
 #include "Vrecirculation_mux_recirculation_mux.h"   //to get parameter values, after they've been made visible in SV
 
@@ -24,7 +27,8 @@
 
 
 #define MAX_SIM_TIME 300
-#define VERIF_START_TIME 7
+#define VERIF_START_TIME 2*std::max(CLK_A_PERIOD,CLK_B_PERIOD)
+
 vluint64_t sim_time = 0;
 vluint64_t posedge_cnt = 0;
 
@@ -262,7 +266,7 @@ class Sequence{
 void dut_reset (std::shared_ptr<Vrecirculation_mux> dut, vluint64_t &sim_time){
     dut->i_rst_A = 0;
     dut->i_rst_B = 0;
-    if(sim_time >= 3 && sim_time < 6){
+    if(sim_time >= 3 && sim_time < VERIF_START_TIME-1){
         dut->i_rst_A = 1;
         dut->i_rst_B = 1;
     }
@@ -318,7 +322,11 @@ int main(int argc, char** argv, char** env) {
 
     while (outCoverage->is_full_coverage() == false) {
     // while(sim_time < MAX_SIM_TIME*20) {
-
+        // random reset 
+        // 0-> all 0s
+        // 1 -> all 1s
+        // 2 -> all random
+        Verilated::randReset(2); 
         dut_reset(dut,sim_time);
 
 
@@ -360,6 +368,8 @@ int main(int argc, char** argv, char** env) {
     }
 
     scb->checkPhase();
+
+    VerilatedCov::write();
     m_trace->close();  
     exit(EXIT_SUCCESS);
 }
