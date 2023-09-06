@@ -1,3 +1,5 @@
+![example workflow](https://github.com/npatsiatzis/recirculation_mux/actions/workflows/verilator_regression.yml/badge.svg)
+
 ### Recirculation MUX RTL implementation
 
 - solution for data bus synchronization

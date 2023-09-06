@@ -2,7 +2,8 @@
 ![example workflow](https://github.com/npatsiatzis/recirculation_mux/actions/workflows/coverage.yml/badge.svg)
 ![example workflow](https://github.com/npatsiatzis/recirculation_mux/actions/workflows/regression_pyuvm.yml/badge.svg)
 ![example workflow](https://github.com/npatsiatzis/recirculation_mux/actions/workflows/coverage_pyuvm.yml/badge.svg)
-
+![example workflow](https://github.com/npatsiatzis/recirculation_mux/actions/workflows/verilator_regression.yml/badge.svg)
+[![codecov](https://codecov.io/gh/npatsiatzis/recirculation_mux/graph/badge.svg?token=HWZU4XSEKD)](https://codecov.io/gh/npatsiatzis/recirculation_mux)
 ### Recirculation MUX RTL implementation
 
 - solution for data bus synchronization
