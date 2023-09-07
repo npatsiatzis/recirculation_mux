@@ -72,7 +72,7 @@ class OutCoverage {
         }
 
         bool is_full_coverage(){
-            return coverage.size() == (1 << (Vrecirculation_mux_recirculation_mux::G_WIDTH));
+            return coverage.size() == (1 << (Vrecirculation_mux_recirculation_mux::g_width));
         }
 };
 
@@ -249,10 +249,10 @@ class Sequence{
             in = new InTx();
             // std::shared_ptr<InTx> in(new InTx());
             if(rand()%5 == 0 && new_tx_ready == 1){
-                in->i_data_A = rand() % (1 << Vrecirculation_mux_recirculation_mux::G_WIDTH);   
+                in->i_data_A = rand() % (1 << Vrecirculation_mux_recirculation_mux::g_width);   
 
                 while(cvg->is_covered(in->i_data_A) == false){
-                    in->i_data_A = rand() % (1 << Vrecirculation_mux_recirculation_mux::G_WIDTH);  
+                    in->i_data_A = rand() % (1 << Vrecirculation_mux_recirculation_mux::g_width);  
 
                 }
                 return in;

@@ -3,19 +3,19 @@
 module recirculation_mux
     #
     (
-        parameter int G_STAGES = 2,
-        parameter int G_WIDTH /*verilator public*/ = 4
+        parameter int g_stages = 2,
+        parameter int g_width /*verilator public*/ = 4
     )
 
     (
         input logic i_clk_A,
         input logic i_rst_A,
         input logic i_pulse_A,
-        input logic [G_WIDTH - 1 : 0] i_data_A,
+        input logic [g_width - 1 : 0] i_data_A,
 
         input logic i_clk_B,
         input logic i_rst_B,
-        output logic [G_WIDTH - 1 : 0] o_data_B,
+        output logic [g_width - 1 : 0] o_data_B,
 
         output logic f_pulse_B,
         output logic f_pulse_B_prev
@@ -23,7 +23,7 @@ module recirculation_mux
 
     logic w_pulse_B;
 
-    toggle_synchronizer #(.G_STAGES(G_STAGES)) sync (.*,.o_pulse_B(w_pulse_B));
+    toggle_synchronizer #(.G_STAGES(g_stages)) sync (.*,.o_pulse_B(w_pulse_B));
 
     always_ff @(posedge i_clk_B) begin : mux_recirculation
         if(i_rst_B) begin
@@ -42,5 +42,13 @@ module recirculation_mux
             f_pulse_B_prev <= f_pulse_B;
         end
     end
+
+    `ifdef WAVEFORM
+        initial begin
+            // Dump waves
+            $dumpfile("dump.vcd");
+            $dumpvars(0, recirculation_mux);
+        end
+    `endif
 
 endmodule : recirculation_mux
