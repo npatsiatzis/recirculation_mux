@@ -4,7 +4,7 @@ module recirculation_mux
     #
     (
         parameter int g_stages = 2,
-        parameter int g_width /*verilator public*/ = 4
+        parameter int g_width /*verilator public*/ = 8
     )
 
     (
@@ -50,5 +50,14 @@ module recirculation_mux
             $dumpvars(0, recirculation_mux);
         end
     `endif
+                        /*          ######################      */
+                        /*          Assertions && Coverage      */
+                        /*          ######################      */
+    `ifdef USE_VERILATOR
+        check_o_data_B : assert property (@(posedge i_clk_B) disable iff (i_rst_B) $rose(w_pulse_B) |=> (o_data_B == $past(i_data_A)));
+            else $warning("Test Failure! ASSERTION FAILED!");
+        check_o_data_B_negative : assert property (@(posedge i_clk_B) disable iff(i_rst_B) !$rose(w_pulse_B) |=> $stable(o_data_B));
+            else $warning("Test Failure! ASSERTION FAILED!");
+    `endif        
 
 endmodule : recirculation_mux
