@@ -19,4 +19,5 @@
 - [pyuvm](https://github.com/npatsiatzis/recirculation_mux/tree/main/pyuvm_sim)
 - [uvm](https://github.com/npatsiatzis/recirculation_mux/tree/main/uvm_sim)
 - [verilator](https://github.com/npatsiatzis/recirculation_mux/tree/main/verilator_sim)
+[mcy](https://github.com/npatsiatzis/recirculation_mux/tree/main/mcy_sim)
 
