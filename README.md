@@ -10,17 +10,6 @@
 - uses a toggle pulse synchronizer to transmit a pulse across clock domains
 - pulses controls the sampling of the data bus on the receiving (sink) domain
 
--- RTL code in:
-- [VHDL](https://github.com/npatsiatzis/recirculation_mux/tree/main/rtl/VHDL)
-- [SystemVerilog](https://github.com/npatsiatzis/recirculation_mux/tree/main/rtl/SystemVerilog)
-
--- Functional verification with methodologies:
-- [cocotb](https://github.com/npatsiatzis/recirculation_mux/tree/main/cocotb_sim)
-- [pyuvm](https://github.com/npatsiatzis/recirculation_mux/tree/main/pyuvm_sim)
-- [uvm](https://github.com/npatsiatzis/recirculation_mux/tree/main/uvm_sim)
-- [verilator](https://github.com/npatsiatzis/recirculation_mux/tree/main/verilator_sim)
-[mcy](https://github.com/npatsiatzis/recirculation_mux/tree/main/mcy_sim)
-
 
 | Folder | Description |
 | ------ | ------ |
@@ -33,7 +22,7 @@
 | [mcy_sim](https://github.com/npatsiatzis/recirculation_mux/tree/main/mcy_sim) | Mutation Coverage Testing of Verilator tb, using  [YoysHQ/mcy](https://github.com/YosysHQ/oss-cad-suite-build)|
 
 
-This is the t<!-- ree view of the strcture of the repo.
+This is the tree view of the strcture of the repo.
 <pre>
 <font size = "2">
 .
@@ -57,4 +46,4 @@ This is the t<!-- ree view of the strcture of the repo.
 └── <font size = "4"><b><a href="https://github.com/npatsiatzis/recirculation_mux/tree/main/mcy_sim">mcy_sim</a></b></font>
     ├── Makefile, (modified) SV files, Verilator tb
     └── scripts
-</pre> -->
+</pre>
