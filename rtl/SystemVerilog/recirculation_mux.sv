@@ -54,9 +54,9 @@ module recirculation_mux
                         /*          Assertions && Coverage      */
                         /*          ######################      */
     `ifdef USE_VERILATOR
-        check_o_data_B : assert property (@(posedge i_clk_B) disable iff (i_rst_B) $rose(w_pulse_B) |=> (o_data_B == $past(i_data_A)));
+        check_o_data_B : assert property (@(posedge i_clk_B) disable iff (i_rst_B) $rose(w_pulse_B) |=> (o_data_B == $past(i_data_A)))
             else $warning("Test Failure! ASSERTION FAILED!");
-        check_o_data_B_negative : assert property (@(posedge i_clk_B) disable iff(i_rst_B) !$rose(w_pulse_B) |=> $stable(o_data_B));
+        check_o_data_B_negative : assert property (@(posedge i_clk_B) disable iff(i_rst_B) !$rose(w_pulse_B) |=> $stable(o_data_B))
             else $warning("Test Failure! ASSERTION FAILED!");
     `endif        
 
