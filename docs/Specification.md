@@ -60,7 +60,7 @@
 
 ### 6. PROTOCOL LAYER
 
-The recirculation MUX operates on single word writes or single word reads 
+The recirculation MUX transfers a single word between clock domains.
 
 ### 7. ROBUSTNESS
 
